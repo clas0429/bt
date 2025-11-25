@@ -187,7 +187,7 @@
             if(tone === "gangster") toneInstruction = "扮演江湖大哥，講義氣";
 
             const prompt = `${toneInstruction} (限50字內，口語)。問：${inputText}`;
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-Z.5-flash:generateContent?key=${API_KEY}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
             
             try {
                 const response = await fetch(url, {
