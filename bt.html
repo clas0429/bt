@@ -3,64 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的藍牙廣播站</title>
+    <title>我的 AI 智慧音箱</title>
     <style>
         body {
             font-family: "微軟正黑體", sans-serif;
             text-align: center;
-            background-color: #f0f0f0;
-            padding: 50px;
-        }
-        input {
-            width: 80%;
-            padding: 15px;
-            font-size: 20px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 15px 40px;
-            font-size: 24px;
-            background-color: #4CAF50; /* 綠色 */
+            background-color: #2c3e50; /* 深藍灰色背景 */
             color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            padding: 20px;
         }
-        button:active {
-            background-color: #3e8e41; /* 按下去變深色 */
-            transform: translateY(2px);
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 { margin-bottom: 30px; }
+        
+        /* 輸入框樣式 */
+        textarea {
+            width: 90%;
+            height: 100px;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 15px;
+            border: none;
+            margin-bottom: 20px;
+            resize: none;
+        }
+
+        /* 按鈕樣式 */
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 5px;
+            transition: 0.3s;
+        }
+        .btn-ask {
+            background-color: #e74c3c; /* 紅色按鈕 */
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #c0392b;
+        }
+        .btn-ask:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        
+        /* 顯示 AI 回答的地方 */
+        #responseArea {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            text-align: left;
+            min-height: 100px;
+            line-height: 1.6;
+        }
+        .status {
+            color: #f1c40f; /* 黃色狀態字 */
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <h1>🎙️ 藍牙廣播系統</h1>
-    <p>請輸入要廣播的文字：</p>
-    
-    <input type="text" id="textToSpeak" value="各位小朋友大家好，現在是下課時間。">
-    <br>
-    
-    <button onclick="sayHello()">📣 開始廣播</button>
+    <div class="container">
+        <h1>🤖 AI 藍牙智慧音箱</h1>
+        
+        <p>輸入你想跟 AI 說的話：</p>
+        <textarea id="userInput" placeholder="例如：講一個笑話給我聽..."></textarea>
+        <br>
+        
+        <button class="btn-ask" onclick="askGemini()">🔴 發送給 AI 並朗讀</button>
+        
+        <div id="statusText" class="status"></div>
+        <div id="responseArea">AI 的回答會出現在這裡...</div>
+    </div>
 
     <script>
-        function sayHello() {
-            // 1. 抓取輸入框的文字
-            var text = document.getElementById("textToSpeak").value;
-            
-            // 2. 建立語音物件
-            var synth = window.speechSynthesis;
-            var utterance = new SpeechSynthesisUtterance(text);
-            
-            // 3. 設定語言 (中文)
-            utterance.lang = 'zh-TW'; 
-            utterance.rate = 1; // 語速 (0.1 ~ 10)
-            utterance.pitch = 1; // 音調 (0 ~ 2)
+        // ⚠️ 請在這裡換上你新申請的 API KEY (為了安全，不要用舊的)
+        const API_KEY = "AIzaSyBR89k--Pp9VjXHSLDLuBkS3x41OS4lfPg"; 
 
-            // 4. 播放聲音
-            synth.speak(utterance);
+        async function askGemini() {
+            const inputText = document.getElementById("userInput").value;
+            const statusDiv = document.getElementById("statusText");
+            const responseDiv = document.getElementById("responseArea");
+
+            if (!inputText) {
+                alert("請先輸入文字喔！");
+                return;
+            }
+
+            // 1. 顯示思考中
+            statusDiv.innerText = "🧠 AI 正在思考中...";
+            responseDiv.innerText = "Loading...";
+
+            // 2. 準備呼叫 Gemini API 的資料
+            // 我們設定 AI 扮演一個簡短回答的助手，因為語音朗讀太長會很吵
+            const prompt = "請用繁體中文，簡短、口語化地回答我(適合朗讀的長度)：" + inputText;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            
+            const data = {
+                contents: [{
+                    parts: [{ text: prompt }]
+                }]
+            };
+
+            try {
+                // 3. 發送請求給 Google
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                // 4. 解析 AI 的回答
+                const aiText = result.candidates[0].content.parts[0].text;
+                
+                // 顯示文字
+                statusDiv.innerText = "✅ 接收成功，準備播放聲音";
+                responseDiv.innerText = aiText;
+
+                // 5. 讓喇叭唸出來 (TTS)
+                speakOut(aiText);
+
+            } catch (error) {
+                console.error("Error:", error);
+                statusDiv.innerText = "❌ 發生錯誤，請檢查 API Key 或網路";
+                responseDiv.innerText = "連線失敗：" + error;
+            }
+        }
+
+        // 文字轉語音函式
+        function speakOut(text) {
+            // 先停止原本正在說的話
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-TW'; // 設定中文
+            utterance.rate = 1.0;     // 語速
+            utterance.pitch = 1.0;    // 音調
+            
+            // 播放
+            window.speechSynthesis.speak(utterance);
         }
     </script>
 
