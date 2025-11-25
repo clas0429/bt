@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 超級智慧音箱</title>
+    <title>AI 全能變聲音箱</title>
     <style>
         body {
             font-family: "微軟正黑體", sans-serif;
@@ -14,105 +14,71 @@
         }
         .container { max-width: 600px; margin: 0 auto; }
         
-        /* 選單樣式 */
+        /* 選單標籤 */
+        label { display: block; text-align: left; margin: 10px 0 5px 5%; color: #bdc3c7; font-size: 14px;}
+
+        /* 下拉選單 */
         select {
-            padding: 10px;
-            font-size: 18px;
+            padding: 12px;
+            font-size: 16px;
             border-radius: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             width: 90%;
             border: none;
             background: #ecf0f1;
+            color: #2c3e50;
         }
 
-        /* 輸入區域容器 (為了放麥克風按鈕) */
-        .input-group {
-            position: relative;
-            width: 90%;
-            margin: 0 auto;
-        }
-
+        /* 輸入框與按鈕樣式 (同前) */
+        .input-group { position: relative; width: 90%; margin: 0 auto; }
         textarea {
-            width: 100%;
-            height: 100px;
-            padding: 15px;
-            font-size: 18px;
-            border-radius: 15px;
-            border: none;
-            resize: none;
-            box-sizing: border-box; /* 確保 padding 不會撐大寬度 */
+            width: 100%; height: 100px; padding: 15px; font-size: 18px;
+            border-radius: 15px; border: none; resize: none; box-sizing: border-box;
         }
-
-        /* 麥克風按鈕 */
         .mic-btn {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background-color: #3498db;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-            transition: 0.3s;
+            position: absolute; bottom: 10px; right: 10px;
+            background-color: #3498db; border: none; border-radius: 50%;
+            width: 50px; height: 50px; font-size: 24px; cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3); transition: 0.3s;
         }
-        .mic-btn.listening {
-            background-color: #e74c3c; /* 錄音中變紅色 */
-            animation: pulse 1.5s infinite;
-        }
-
-        /* 送出按鈕 */
+        .mic-btn.listening { background-color: #e74c3c; animation: pulse 1.5s infinite; }
         .btn-ask {
-            width: 90%;
-            padding: 15px;
-            font-size: 20px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            margin-top: 20px;
-            background-color: #27ae60;
-            color: white;
-            font-weight: bold;
+            width: 90%; padding: 15px; font-size: 20px; border: none;
+            border-radius: 50px; cursor: pointer; margin-top: 20px;
+            background-color: #27ae60; color: white; font-weight: bold;
             box-shadow: 0 4px 0 #219150;
         }
         .btn-ask:active { transform: translateY(4px); box-shadow: none; }
-
         #responseArea {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            text-align: left;
-            min-height: 100px;
-            line-height: 1.6;
-            white-space: pre-wrap; /* 保留換行 */
+            margin-top: 20px; padding: 20px; background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px; text-align: left; min-height: 100px;
+            line-height: 1.6; white-space: pre-wrap;
         }
         .status { color: #f1c40f; font-size: 14px; margin-top: 10px; }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>🎙️ AI 變聲語音助理</h1>
+        <h1>🎤 AI 全能變聲音箱</h1>
         
+        <label>1. 選擇 AI 的個性 (劇本)</label>
         <select id="aiTone">
-            <option value="normal">🤖 正常助理 (簡短精準)</option>
-            <option value="kindergarten">🧸 溫柔幼兒園老師 (親切可愛)</option>
-            <option value="humorous">🤣 幽默搞笑咖 (講話很有梗)</option>
-            <option value="tsundere">😤 傲嬌機器人 (嘴巴壞心地好)</option>
-            <option value="gangster">😎 帥氣大哥 (充滿江湖味)</option>
+            <option value="normal">🤖 正常助理</option>
+            <option value="kindergarten">🧸 幼兒園老師</option>
+            <option value="humorous">🤣 幽默搞笑咖</option>
+            <option value="tsundere">😤 傲嬌機器人</option>
+            <option value="gangster">😎 江湖大哥</option>
+        </select>
+
+        <label>2. 選擇聲音來源 (決定男聲/女聲)</label>
+        <select id="voiceSelect">
+            <option value="">正在讀取手機裡的聲音...</option>
         </select>
 
         <div class="input-group">
-            <textarea id="userInput" placeholder="按一下右下角的麥克風開始說話..."></textarea>
+            <textarea id="userInput" placeholder="按麥克風說話，或輸入文字..."></textarea>
             <button class="mic-btn" id="micBtn" onclick="toggleSpeech()">🎤</button>
         </div>
         
@@ -126,153 +92,172 @@
         // 🔴 請在這裡貼上你 新的 API Key
         const API_KEY = "AIzaSyBR89k--Pp9VjXHSLDLuBkS3x41OS4lfPg"; 
 
-        // --- 語音辨識設定 (Speech Recognition) ---
-        // 檢查瀏覽器支不支援
+        // --- 1. 聲音載入功能 (最重要的部分) ---
+        let voices = [];
+        const voiceSelect = document.getElementById("voiceSelect");
+
+        function loadVoices() {
+            // 抓取瀏覽器提供的所有聲音
+            voices = window.speechSynthesis.getVoices();
+            
+            // 清空選單
+            voiceSelect.innerHTML = "";
+
+            // 篩選出中文聲音 (zh-TW, zh-CN, zh-HK)
+            // 如果你想要所有語言，可以把 .filter 那行拿掉
+            const chineseVoices = voices.filter(voice => voice.lang.includes('zh'));
+
+            if (chineseVoices.length === 0) {
+                // 如果找不到中文聲音，就顯示全部讓使用者挑
+                voices.forEach(addOption);
+            } else {
+                chineseVoices.forEach(addOption);
+            }
+
+            // 如果真的沒抓到任何聲音 (有些手機比較慢)
+            if (voiceSelect.options.length === 0) {
+                const option = document.createElement('option');
+                option.textContent = "預設聲音 (無法選擇)";
+                voiceSelect.appendChild(option);
+            }
+        }
+
+        function addOption(voice, index) {
+            const option = document.createElement('option');
+            option.textContent = `${voice.name} (${voice.lang})`; // 顯示名字和語言
+            option.value = index; // 我們用陣列的位置來記錄
+            voiceSelect.appendChild(option);
+        }
+
+        // 監聽：當瀏覽器準備好聲音時，就執行載入
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        // 一開始先試著跑一次
+        loadVoices();
+
+
+        // --- 2. 語音辨識 (同前) ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         let isListening = false;
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
-            recognition.lang = 'zh-TW'; // 設定聽中文
-            recognition.interimResults = true; // 允許顯示講到一半的字
-            recognition.continuous = false; // 講完一句自動停止
+            recognition.lang = 'zh-TW';
+            recognition.interimResults = true;
+            recognition.continuous = false;
 
-            // 當收到聲音轉換成文字時
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
-                document.getElementById("userInput").value = transcript; // 同步顯示文字
+                document.getElementById("userInput").value = transcript;
             };
-
-            // 當錄音結束時
             recognition.onend = function() {
                 isListening = false;
                 document.getElementById("micBtn").classList.remove("listening");
-                document.getElementById("statusText").innerText = "🎤 錄音結束，請按發送";
+                document.getElementById("statusText").innerText = "🎤 錄音結束";
             };
-
-            // 當發生錯誤
             recognition.onerror = function(event) {
-                console.log("語音錯誤", event.error);
                 isListening = false;
                 document.getElementById("micBtn").classList.remove("listening");
             };
-        } else {
-            alert("你的瀏覽器不支援語音輸入喔！請用 Chrome 或 Android 手機。");
         }
 
-        // 開關麥克風的函式
         function toggleSpeech() {
-            if (!recognition) return;
-
+            if (!recognition) { alert("不支援語音輸入"); return; }
             if (isListening) {
                 recognition.stop();
             } else {
                 recognition.start();
                 isListening = true;
-                document.getElementById("micBtn").classList.add("listening"); // 按鈕變紅
-                document.getElementById("statusText").innerText = "👂 正在聽你說話...";
-                document.getElementById("userInput").value = ""; // 清空舊文字
+                document.getElementById("micBtn").classList.add("listening");
+                document.getElementById("statusText").innerText = "👂 正在聽...";
+                document.getElementById("userInput").value = "";
             }
         }
 
-        // --- AI 對話函式 (askGemini) ---
+        // --- 3. AI 對話 (askGemini) ---
         async function askGemini() {
             const inputText = document.getElementById("userInput").value;
-            const tone = document.getElementById("aiTone").value; // 取得選擇的語氣
+            const tone = document.getElementById("aiTone").value;
             const statusDiv = document.getElementById("statusText");
             const responseDiv = document.getElementById("responseArea");
 
-            if (!inputText) {
-                alert("請先說話或輸入文字喔！");
-                return;
-            }
+            if (!inputText) { alert("請輸入文字"); return; }
 
-            statusDiv.innerText = "🧠 AI 正在思考中...";
+            statusDiv.innerText = "🧠 AI 思考中...";
             responseDiv.innerText = "Loading...";
 
-            // 3. 根據選單設定 AI 的角色設定 (System Prompt)
             let toneInstruction = "";
             switch(tone) {
-                case "kindergarten":
-                    toneInstruction = "請扮演一位溫柔有耐心的幼兒園老師，說話要用疊字，語氣要可愛，適合小朋友聽。";
-                    break;
-                case "humorous":
-                    toneInstruction = "請扮演一個幽默風趣的喜劇演員，回答要好笑、有梗，可以適當開玩笑。";
-                    break;
-                case "tsundere":
-                    toneInstruction = "請扮演一個『傲嬌』的機器人，口頭上說不想幫忙或嫌麻煩，但最後還是會給出正確答案。口頭禪是『哼，我才不是特地幫你的呢！』";
-                    break;
-                case "gangster":
-                    toneInstruction = "請扮演一位講義氣的江湖大哥，說話要豪邁、直爽，稱呼對方為『兄弟』。";
-                    break;
-                default: // normal
-                    toneInstruction = "請用繁體中文，簡短、口語化、精準地回答。";
+                case "kindergarten": toneInstruction = "請扮演溫柔的幼兒園老師，用語可愛，使用疊字。"; break;
+                case "humorous": toneInstruction = "請扮演幽默的喜劇演員，回答要有梗好笑。"; break;
+                case "tsundere": toneInstruction = "請扮演傲嬌機器人，口嫌體正直，常用'哼'。"; break;
+                case "gangster": toneInstruction = "請扮演江湖大哥，講義氣，稱呼對方兄弟。"; break;
+                default: toneInstruction = "請用簡短口語化的繁體中文回答。";
             }
 
-            // 組合最終指令
-            const finalPrompt = `${toneInstruction} (回答長度適合語音朗讀)。使用者的問題是：${inputText}`;
-
+            const prompt = `${toneInstruction} (約50字對話)。問題：${inputText}`;
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
             
-            const data = {
-                contents: [{ parts: [{ text: finalPrompt }] }]
-            };
-
             try {
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
 
                 const result = await response.json();
                 
-                // 錯誤處理區
-                if (result.error) {
-                    statusDiv.innerText = "❌ API 錯誤";
-                    responseDiv.innerText = result.error.message;
-                    return;
-                }
-                if (!result.candidates) {
-                    statusDiv.innerText = "⚠️ AI 無回應";
-                    return;
+                if (result.error || !result.candidates) {
+                    throw new Error(result.error?.message || "無回應");
                 }
 
                 const aiText = result.candidates[0].content.parts[0].text;
                 
-                statusDiv.innerText = "✅ 回答完成";
+                statusDiv.innerText = "✅ 準備播放";
                 responseDiv.innerText = aiText;
-                
-                // 播放語音
                 speakOut(aiText);
 
             } catch (error) {
                 console.error(error);
-                statusDiv.innerText = "❌ 連線失敗";
+                statusDiv.innerText = "❌ 錯誤";
                 responseDiv.innerText = error;
             }
         }
 
-        // 文字轉語音
+        // --- 4. 文字轉語音 (更新版：使用選定的聲音) ---
         function speakOut(text) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-TW';
             
-            // 根據不同角色調整語速或音調 (選用)
-            const tone = document.getElementById("aiTone").value;
-            if (tone === "kindergarten") {
-                utterance.pitch = 1.2; // 聲音高一點
-                utterance.rate = 0.9;  // 慢一點
-            } else if (tone === "gangster") {
-                utterance.pitch = 0.8; // 聲音低沉
+            // 🔴 關鍵：把使用者選到的聲音套用上去
+            const selectedIndex = voiceSelect.value;
+            // 如果選單裡有選東西，而且 voices 陣列不是空的
+            if (selectedIndex !== "" && voices.length > 0) {
+                // 找出是哪一個聲音物件 (這是瀏覽器規定的寫法)
+                // 這裡我們在 HTML value 存的是 index，但為了保險，我們用 filter 的邏輯
+                // 簡單做法：直接對應剛剛 voices 陣列
+                const chineseVoices = voices.filter(voice => voice.lang.includes('zh'));
+                
+                // 如果有篩選過中文，就從中文列表拿，不然從總表拿
+                if(chineseVoices.length > 0) {
+                    utterance.voice = chineseVoices[selectedIndex];
+                } else {
+                    utterance.voice = voices[selectedIndex];
+                }
             }
+
+            utterance.rate = 1.0;
+            
+            // 根據性格微調語速
+            const tone = document.getElementById("aiTone").value;
+            if (tone === "kindergarten") utterance.rate = 0.8;
+            if (tone === "humorous") utterance.rate = 1.1;
 
             window.speechSynthesis.speak(utterance);
         }
     </script>
 
 </body>
-
 </html>
