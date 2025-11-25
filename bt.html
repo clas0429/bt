@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的藍牙廣播站</title>
+    <style>
+        body {
+            font-family: "微軟正黑體", sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 50px;
+        }
+        input {
+            width: 80%;
+            padding: 15px;
+            font-size: 20px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 15px 40px;
+            font-size: 24px;
+            background-color: #4CAF50; /* 綠色 */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+        button:active {
+            background-color: #3e8e41; /* 按下去變深色 */
+            transform: translateY(2px);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎙️ 藍牙廣播系統</h1>
+    <p>請輸入要廣播的文字：</p>
+    
+    <input type="text" id="textToSpeak" value="各位小朋友大家好，現在是下課時間。">
+    <br>
+    
+    <button onclick="sayHello()">📣 開始廣播</button>
+
+    <script>
+        function sayHello() {
+            // 1. 抓取輸入框的文字
+            var text = document.getElementById("textToSpeak").value;
+            
+            // 2. 建立語音物件
+            var synth = window.speechSynthesis;
+            var utterance = new SpeechSynthesisUtterance(text);
+            
+            // 3. 設定語言 (中文)
+            utterance.lang = 'zh-TW'; 
+            utterance.rate = 1; // 語速 (0.1 ~ 10)
+            utterance.pitch = 1; // 音調 (0 ~ 2)
+
+            // 4. 播放聲音
+            synth.speak(utterance);
+        }
+    </script>
+
+</body>
+</html>
