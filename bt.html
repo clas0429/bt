@@ -213,7 +213,7 @@
             // 組合最終指令
             const finalPrompt = `${toneInstruction} (回答長度適合語音朗讀)。使用者的問題是：${inputText}`;
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
             
             const data = {
                 contents: [{ parts: [{ text: finalPrompt }] }]
@@ -274,4 +274,5 @@
     </script>
 
 </body>
+
 </html>
