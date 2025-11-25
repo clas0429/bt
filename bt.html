@@ -168,15 +168,16 @@
         }
 
         // --- 3. AI 對話 (加速版) ---
+// --- 3. AI 對話 (超級除錯版) ---
         async function askGemini() {
             const inputText = document.getElementById("userInput").value;
-            if (!inputText) return; // 沒字就不送
+            if (!inputText) return; 
 
             const tone = document.getElementById("aiTone").value;
             const statusDiv = document.getElementById("statusText");
             const responseDiv = document.getElementById("responseArea");
 
-            statusDiv.innerText = "⚡ AI 光速思考中...";
+            statusDiv.innerText = "⚡ AI (2.5 Flash) 思考中...";
             responseDiv.innerText = "Loading...";
 
             // 角色設定
@@ -187,6 +188,8 @@
             if(tone === "gangster") toneInstruction = "扮演江湖大哥，講義氣";
 
             const prompt = `${toneInstruction} (限50字內，口語)。問：${inputText}`;
+            
+            // 這裡保留你想要的 2.5-flash
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
             
             try {
@@ -195,25 +198,46 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { maxOutputTokens: 300 } // 加速限制
+                        generationConfig: { maxOutputTokens: 2000 } 
                     })
                 });
 
                 const result = await response.json();
-                if (result.error || !result.candidates) throw new Error("無回應");
 
+                // 🛑 【關鍵一步】把 Google 回傳的真相印在 Console (開發者工具)
+                console.log("Google 回傳的完整資料：", result);
+
+                // 🛑 【錯誤攔截 1】如果回傳包含 error (代表失敗)
+                if (result.error) {
+                    statusDiv.innerText = "❌ API 回傳錯誤";
+                    // 這裡會直接把 Google 說的錯誤原因顯示在螢幕上
+                    responseDiv.innerText = "錯誤代碼：" + result.error.code + "\n原因：" + result.error.message;
+                    
+                    // 如果是 404，通常代表模型名稱打錯 (例如可能是 gemini-2.5-flash-001 ?)
+                    return;
+                }
+
+                // 🛑 【錯誤攔截 2】如果沒有 error，但也沒給 candidates (通常是安全過濾)
+                if (!result.candidates || result.candidates.length === 0) {
+                    statusDiv.innerText = "⚠️ AI 拒絕回答";
+                    responseDiv.innerText = "可能原因：觸發安全過濾 (Safety Filter)，或是沒有產生內容。\n" + 
+                                          "詳細資訊：" + JSON.stringify(result.promptFeedback);
+                    return;
+                }
+
+                // 如果上面兩關都過了，這裡才不會報錯
                 const aiText = result.candidates[0].content.parts[0].text;
+                
                 statusDiv.innerText = "✅ 完成";
                 responseDiv.innerText = aiText;
                 speakOut(aiText);
 
             } catch (error) {
                 console.error(error);
-                statusDiv.innerText = "❌ 失敗";
-                responseDiv.innerText = "連線問題";
+                statusDiv.innerText = "❌ 程式執行失敗";
+                responseDiv.innerText = "連線問題：" + error;
             }
         }
-
         // --- 4. TTS 朗讀 ---
         function speakOut(text) {
             window.speechSynthesis.cancel();
@@ -243,4 +267,3 @@
 
 </body>
 </html>
-
