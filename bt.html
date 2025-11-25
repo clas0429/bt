@@ -3,55 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的 AI 智慧音箱</title>
+    <title>AI 超級智慧音箱</title>
     <style>
         body {
             font-family: "微軟正黑體", sans-serif;
             text-align: center;
-            background-color: #2c3e50; /* 深藍灰色背景 */
+            background-color: #2c3e50;
             color: white;
             padding: 20px;
         }
-        .container {
-            max-width: 600px;
+        .container { max-width: 600px; margin: 0 auto; }
+        
+        /* 選單樣式 */
+        select {
+            padding: 10px;
+            font-size: 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            width: 90%;
+            border: none;
+            background: #ecf0f1;
+        }
+
+        /* 輸入區域容器 (為了放麥克風按鈕) */
+        .input-group {
+            position: relative;
+            width: 90%;
             margin: 0 auto;
         }
-        h1 { margin-bottom: 30px; }
-        
-        /* 輸入框樣式 */
+
         textarea {
-            width: 90%;
+            width: 100%;
             height: 100px;
             padding: 15px;
             font-size: 18px;
             border-radius: 15px;
             border: none;
-            margin-bottom: 20px;
             resize: none;
+            box-sizing: border-box; /* 確保 padding 不會撐大寬度 */
         }
 
-        /* 按鈕樣式 */
-        button {
-            padding: 15px 30px;
+        /* 麥克風按鈕 */
+        .mic-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: #3498db;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            transition: 0.3s;
+        }
+        .mic-btn.listening {
+            background-color: #e74c3c; /* 錄音中變紅色 */
+            animation: pulse 1.5s infinite;
+        }
+
+        /* 送出按鈕 */
+        .btn-ask {
+            width: 90%;
+            padding: 15px;
             font-size: 20px;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            margin: 5px;
-            transition: 0.3s;
-        }
-        .btn-ask {
-            background-color: #e74c3c; /* 紅色按鈕 */
+            margin-top: 20px;
+            background-color: #27ae60;
             color: white;
             font-weight: bold;
-            box-shadow: 0 4px 0 #c0392b;
+            box-shadow: 0 4px 0 #219150;
         }
-        .btn-ask:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
-        
-        /* 顯示 AI 回答的地方 */
+        .btn-ask:active { transform: translateY(4px); box-shadow: none; }
+
         #responseArea {
             margin-top: 20px;
             padding: 20px;
@@ -60,98 +87,188 @@
             text-align: left;
             min-height: 100px;
             line-height: 1.6;
+            white-space: pre-wrap; /* 保留換行 */
         }
-        .status {
-            color: #f1c40f; /* 黃色狀態字 */
-            font-size: 14px;
+        .status { color: #f1c40f; font-size: 14px; margin-top: 10px; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>🤖 AI 藍牙智慧音箱</h1>
+        <h1>🎙️ AI 變聲語音助理</h1>
         
-        <p>輸入你想跟 AI 說的話：</p>
-        <textarea id="userInput" placeholder="例如：講一個笑話給我聽..."></textarea>
-        <br>
+        <select id="aiTone">
+            <option value="normal">🤖 正常助理 (簡短精準)</option>
+            <option value="kindergarten">🧸 溫柔幼兒園老師 (親切可愛)</option>
+            <option value="humorous">🤣 幽默搞笑咖 (講話很有梗)</option>
+            <option value="tsundere">😤 傲嬌機器人 (嘴巴壞心地好)</option>
+            <option value="gangster">😎 帥氣大哥 (充滿江湖味)</option>
+        </select>
+
+        <div class="input-group">
+            <textarea id="userInput" placeholder="按一下右下角的麥克風開始說話..."></textarea>
+            <button class="mic-btn" id="micBtn" onclick="toggleSpeech()">🎤</button>
+        </div>
         
-        <button class="btn-ask" onclick="askGemini()">🔴 發送給 AI 並朗讀</button>
+        <button class="btn-ask" onclick="askGemini()">🚀 發送給 AI</button>
         
         <div id="statusText" class="status"></div>
-        <div id="responseArea">AI 的回答會出現在這裡...</div>
+        <div id="responseArea">等待對話中...</div>
     </div>
 
     <script>
-        // ⚠️ 請在這裡換上你新申請的 API KEY (為了安全，不要用舊的)
+        // 🔴 請在這裡貼上你 新的 API Key
         const API_KEY = "AIzaSyBR89k--Pp9VjXHSLDLuBkS3x41OS4lfPg"; 
 
+        // --- 語音辨識設定 (Speech Recognition) ---
+        // 檢查瀏覽器支不支援
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let isListening = false;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'zh-TW'; // 設定聽中文
+            recognition.interimResults = true; // 允許顯示講到一半的字
+            recognition.continuous = false; // 講完一句自動停止
+
+            // 當收到聲音轉換成文字時
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById("userInput").value = transcript; // 同步顯示文字
+            };
+
+            // 當錄音結束時
+            recognition.onend = function() {
+                isListening = false;
+                document.getElementById("micBtn").classList.remove("listening");
+                document.getElementById("statusText").innerText = "🎤 錄音結束，請按發送";
+            };
+
+            // 當發生錯誤
+            recognition.onerror = function(event) {
+                console.log("語音錯誤", event.error);
+                isListening = false;
+                document.getElementById("micBtn").classList.remove("listening");
+            };
+        } else {
+            alert("你的瀏覽器不支援語音輸入喔！請用 Chrome 或 Android 手機。");
+        }
+
+        // 開關麥克風的函式
+        function toggleSpeech() {
+            if (!recognition) return;
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+                isListening = true;
+                document.getElementById("micBtn").classList.add("listening"); // 按鈕變紅
+                document.getElementById("statusText").innerText = "👂 正在聽你說話...";
+                document.getElementById("userInput").value = ""; // 清空舊文字
+            }
+        }
+
+        // --- AI 對話函式 (askGemini) ---
         async function askGemini() {
             const inputText = document.getElementById("userInput").value;
+            const tone = document.getElementById("aiTone").value; // 取得選擇的語氣
             const statusDiv = document.getElementById("statusText");
             const responseDiv = document.getElementById("responseArea");
 
             if (!inputText) {
-                alert("請先輸入文字喔！");
+                alert("請先說話或輸入文字喔！");
                 return;
             }
 
-            // 1. 顯示思考中
             statusDiv.innerText = "🧠 AI 正在思考中...";
             responseDiv.innerText = "Loading...";
 
-            // 2. 準備呼叫 Gemini API 的資料
-            // 我們設定 AI 扮演一個簡短回答的助手，因為語音朗讀太長會很吵
-            const prompt = "請用繁體中文，口語化地回答我(適合朗讀的長度)：" + inputText;
+            // 3. 根據選單設定 AI 的角色設定 (System Prompt)
+            let toneInstruction = "";
+            switch(tone) {
+                case "kindergarten":
+                    toneInstruction = "請扮演一位溫柔有耐心的幼兒園老師，說話要用疊字，語氣要可愛，適合小朋友聽。";
+                    break;
+                case "humorous":
+                    toneInstruction = "請扮演一個幽默風趣的喜劇演員，回答要好笑、有梗，可以適當開玩笑。";
+                    break;
+                case "tsundere":
+                    toneInstruction = "請扮演一個『傲嬌』的機器人，口頭上說不想幫忙或嫌麻煩，但最後還是會給出正確答案。口頭禪是『哼，我才不是特地幫你的呢！』";
+                    break;
+                case "gangster":
+                    toneInstruction = "請扮演一位講義氣的江湖大哥，說話要豪邁、直爽，稱呼對方為『兄弟』。";
+                    break;
+                default: // normal
+                    toneInstruction = "請用繁體中文，簡短、口語化、精準地回答。";
+            }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+            // 組合最終指令
+            const finalPrompt = `${toneInstruction} (回答長度適合語音朗讀)。使用者的問題是：${inputText}`;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
             
             const data = {
-                contents: [{
-                    parts: [{ text: prompt }]
-                }]
+                contents: [{ parts: [{ text: finalPrompt }] }]
             };
 
             try {
-                // 3. 發送請求給 Google
                 const response = await fetch(url, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
                 const result = await response.json();
                 
-                // 4. 解析 AI 的回答
+                // 錯誤處理區
+                if (result.error) {
+                    statusDiv.innerText = "❌ API 錯誤";
+                    responseDiv.innerText = result.error.message;
+                    return;
+                }
+                if (!result.candidates) {
+                    statusDiv.innerText = "⚠️ AI 無回應";
+                    return;
+                }
+
                 const aiText = result.candidates[0].content.parts[0].text;
                 
-                // 顯示文字
-                statusDiv.innerText = "✅ 接收成功，準備播放聲音";
+                statusDiv.innerText = "✅ 回答完成";
                 responseDiv.innerText = aiText;
-
-                // 5. 讓喇叭唸出來 (TTS)
+                
+                // 播放語音
                 speakOut(aiText);
 
             } catch (error) {
-                console.error("Error:", error);
-                statusDiv.innerText = "❌ 發生錯誤，請檢查 API Key 或網路";
-                responseDiv.innerText = "連線失敗：" + error;
+                console.error(error);
+                statusDiv.innerText = "❌ 連線失敗";
+                responseDiv.innerText = error;
             }
         }
 
-        // 文字轉語音函式
+        // 文字轉語音
         function speakOut(text) {
-            // 先停止原本正在說的話
             window.speechSynthesis.cancel();
-
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-TW'; // 設定中文
-            utterance.rate = 1.0;     // 語速
-            utterance.pitch = 1.0;    // 音調
+            utterance.lang = 'zh-TW';
             
-            // 播放
+            // 根據不同角色調整語速或音調 (選用)
+            const tone = document.getElementById("aiTone").value;
+            if (tone === "kindergarten") {
+                utterance.pitch = 1.2; // 聲音高一點
+                utterance.rate = 0.9;  // 慢一點
+            } else if (tone === "gangster") {
+                utterance.pitch = 0.8; // 聲音低沉
+            }
+
             window.speechSynthesis.speak(utterance);
         }
     </script>
