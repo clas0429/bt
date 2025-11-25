@@ -195,7 +195,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { maxOutputTokens: 100 } // 加速限制
+                        generationConfig: { maxOutputTokens: 300 } // 加速限制
                     })
                 });
 
@@ -243,3 +243,4 @@
 
 </body>
 </html>
+
