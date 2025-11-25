@@ -187,7 +187,7 @@
             if(tone === "tsundere") toneInstruction = "扮演傲嬌機器人，常用'哼'";
             if(tone === "gangster") toneInstruction = "扮演江湖大哥，講義氣";
 
-            const prompt = `${toneInstruction} (限50字內，口語)。問：${inputText}`;
+            const prompt = `${toneInstruction} (限50字內，口語，不要有圖示或顏文字)。問：${inputText}`;
             
             // 這裡保留你想要的 2.5-flash
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
